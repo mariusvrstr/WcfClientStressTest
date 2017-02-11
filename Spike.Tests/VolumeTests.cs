@@ -18,7 +18,7 @@ namespace Spike.Tests
         public void TestVolumeNoRetryNoExceptions()
         {
             var failures = 0;
-            var itemsToDo = 30000;
+            var itemsToDo = 3000;
             var completed = 0;
 
             Console.WriteLine($"Attempting to hash [{itemsToDo}] values in stress test:");
