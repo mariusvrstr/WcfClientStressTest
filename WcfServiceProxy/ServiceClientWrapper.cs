@@ -121,7 +121,10 @@ namespace WcfServiceProxy
             {
                 this._serviceClient.Abort();
             }
-            this._serviceClient = null;
+            finally
+            {
+                this._serviceClient = null;
+            }
         }
     }
 }
