@@ -57,6 +57,8 @@ namespace WcfServiceProxy
         {
             var errors = 0;
             CommunicationException exception = null;
+            var completed = false;
+
             while (errors < retryAttempts)
             {
                 try
@@ -66,7 +68,10 @@ namespace WcfServiceProxy
                         throw new CommunicationObjectFaultedException($"The Service Client object is not in a valid state. Status is [{this.ServiceClient.State}]"); 
                     }
 
-                    return serviceCall.Invoke(this.ServiceClient);
+                    var response = serviceCall.Invoke(this.ServiceClient);
+                    completed = true;
+
+                    return response;
                 }
                 catch (CommunicationException comsException)
                 {
@@ -86,10 +91,15 @@ namespace WcfServiceProxy
                 }
                 finally
                 {
-                    this.DisposeClient();
+                    if (!completed)
+                    {
+                        this.DisposeClient();
+                    }
                 }
             }
-            throw exception ?? new CommunicationException(@"Excecution unsuccessfull with no exceptions. Invalid state reached inside 'Service Client Wrapper' for opperation.");
+
+            throw exception ?? new CommunicationException(
+                @"Excecution unsuccessfull with no exceptions. Invalid state reached inside 'Service Client Wrapper' for opperation.");
         }
 
         public void Dispose()
