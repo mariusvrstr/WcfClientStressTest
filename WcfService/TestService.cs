@@ -14,7 +14,7 @@ namespace WcfService
             if (simulateExceptions && value % 2 > 0 && !_failedCache.Contains(value))
             {
                 _failedCache.Add(value);
-                throw new CommunicationException("Simulated exception in service.");
+                throw new FaultException("Simulated exception in service.");
             }
             
             var response = HashExtentions.ShaHash($"Random [{value}] string");

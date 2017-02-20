@@ -23,6 +23,7 @@ namespace WcfServiceProxy
         private TClient _serviceClient;
         private Binding _binding;
         private EndpointAddress _endpoint;
+
         public ServiceClientWrapper() { }
         public ServiceClientWrapper(Binding binding, EndpointAddress endpointAddress)
         {
@@ -37,6 +38,7 @@ namespace WcfServiceProxy
                 return this._serviceClient = this._serviceClient ?? this.CreateClient();
             }
         }
+
         public void Excecute(
             Action<TIService> serviceCall,
             int retryAttempts = 1,
@@ -47,6 +49,7 @@ namespace WcfServiceProxy
                 retryAttempts,
                 exceptionHandler);
         }
+
         public TResult Excecute<TResult>(
             Func<TIService, TResult> serviceCall,
             int retryAttempts = 1,
@@ -56,9 +59,13 @@ namespace WcfServiceProxy
             CommunicationException exception = null;
             while (errors < retryAttempts)
             {
-                this.DisposeClient();
                 try
                 {
+                    if (!this.ServiceClient.State.IsReady())
+                    {
+                        throw new CommunicationObjectFaultedException($"The Service Client object is not in a valid state. Status is [{this.ServiceClient.State}]"); 
+                    }
+
                     return serviceCall.Invoke(this.ServiceClient);
                 }
                 catch (CommunicationException comsException)
@@ -108,13 +115,15 @@ namespace WcfServiceProxy
             }
             try
             {
-                if (this._serviceClient.State == CommunicationState.Faulted)
+                switch (this._serviceClient.State)
                 {
-                    this._serviceClient.Abort();
-                }
-                else
-                {
-                    this._serviceClient.Close();
+                    case CommunicationState.Faulted:
+                        this._serviceClient.Abort();
+                        break;
+
+                    default:
+                        this._serviceClient.Close();
+                        break;
                 }
             }
             catch
@@ -124,6 +133,23 @@ namespace WcfServiceProxy
             finally
             {
                 this._serviceClient = null;
+            }
+        }
+    }
+
+    public static class ServiceExtentions
+    {
+        public static bool IsReady(this CommunicationState original)
+        {
+            switch (original)
+            {
+                case CommunicationState.Created:
+                case CommunicationState.Opened:
+                case CommunicationState.Opening:
+                    return true;
+
+                default:
+                    return false;
             }
         }
     }
