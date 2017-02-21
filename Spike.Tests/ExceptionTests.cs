@@ -15,7 +15,7 @@ namespace Spike.Tests
          * */
 
         [TestMethod]
-        public void TestVolumeWithExceptionsNoRetry()
+        public void TestExceptionsNoRetry()
         {
             var failures = 0;
             var itemsToDo = 10;
@@ -46,7 +46,7 @@ namespace Spike.Tests
 
 
         [TestMethod]
-        public void TestVolumeWithExceptionsWithRetry()
+        public void TestExceptionsWithRetry()
         {
             var failures = 0;
             var itemsToDo = 10;

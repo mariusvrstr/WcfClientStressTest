@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{0EA3FC69-2E69-46C8-9C07-EAB2EF368AC8}</ProjectGuid>
+    <ProjectGuid>{00D53FAD-1A51-49DE-A390-982977488C63}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WcfServiceProxy</RootNamespace>
-    <AssemblyName>WcfServiceProxy</AssemblyName>
+    <RootNamespace>Spike.Common</RootNamespace>
+    <AssemblyName>Spike.Common</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -43,48 +43,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Service References\TestService\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Compile>
-    <Compile Include="TestProxy.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\TestService\service.wsdl" />
-    <None Include="Service References\TestService\service.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\TestService\service1.xsd">
-      <SubType>Designer</SubType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadataStorage Include="Service References\TestService\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\TestService\configuration91.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\TestService\configuration.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\TestService\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Spike.Common\Spike.Common.csproj">
-      <Project>{00d53fad-1a51-49de-a390-982977488c63}</Project>
-      <Name>Spike.Common</Name>
-    </ProjectReference>
+    <Compile Include="SampleWorker.cs" />
+    <Compile Include="ServiceClientWrapper.cs" />
+    <Compile Include="StopwatchWorker.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

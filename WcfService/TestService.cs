@@ -1,8 +1,9 @@
 ﻿
+using System;
+
 namespace WcfService
 {
     using System.ServiceModel;
-    using Properties;
     using System.Collections.Generic;
 
     public class TestService : ITestService
@@ -11,6 +12,9 @@ namespace WcfService
 
         public string TestCall(int value, bool simulateExceptions)
         {
+            Console.Clear();
+            Console.WriteLine($"Request Received for [{value}]");
+
             if (simulateExceptions && value % 2 > 0 && !_failedCache.Contains(value))
             {
                 _failedCache.Add(value);
@@ -18,6 +22,8 @@ namespace WcfService
             }
             
             var response = HashExtentions.ShaHash($"Random [{value}] string");
+
+            Console.WriteLine($"Request Completed. Hash [{response}]");
             return response;
         }
 

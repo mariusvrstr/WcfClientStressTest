@@ -9,13 +9,14 @@
  *  // Use the client wrapper to excecute the client operations
  *  author = consumer.Excecute(service => service.AddAuthor(request));
  */
- 
-namespace WcfServiceProxy
-{
-    using System;
-    using System.ServiceModel;
-    using System.ServiceModel.Channels;
 
+using System;
+using System.ServiceModel;
+using System.ServiceModel.Channels;
+using System.Threading;
+
+namespace Spike.Common
+{
     public class ServiceClientWrapper<TClient, TIService> : IDisposable
         where TClient : ClientBase<TIService>, TIService
         where TIService : class
@@ -23,6 +24,7 @@ namespace WcfServiceProxy
         private TClient _serviceClient;
         private Binding _binding;
         private EndpointAddress _endpoint;
+        private const int RetryCoolDownInSeconds = 1;
 
         public ServiceClientWrapper() { }
         public ServiceClientWrapper(Binding binding, EndpointAddress endpointAddress)
@@ -56,22 +58,26 @@ namespace WcfServiceProxy
             Action<CommunicationException> exceptionHandler = null)
         {
             var errors = 0;
-            CommunicationException exception = null;
             var completed = false;
+            CommunicationException exception = null;
+            var response = default(TResult);
 
-            while (errors < retryAttempts)
+            while (!completed && errors < retryAttempts)
             {
                 try
                 {
                     if (!this.ServiceClient.State.IsReady())
                     {
-                        throw new CommunicationObjectFaultedException($"The Service Client object is not in a valid state. Status is [{this.ServiceClient.State}]"); 
+                        this.DisposeClient();
+
+                        if (!this.ServiceClient.State.IsReady())
+                        {
+                            throw new CommunicationObjectFaultedException($"WCF Client state is not valid. Connection Status [{this.ServiceClient.State}]");
+                        }
                     }
 
-                    var response = serviceCall.Invoke(this.ServiceClient);
+                    response = serviceCall.Invoke(this.ServiceClient);
                     completed = true;
-
-                    return response;
                 }
                 catch (CommunicationException comsException)
                 {
@@ -87,7 +93,20 @@ namespace WcfServiceProxy
                             exception = reThrowException;
                         }
                     }
+
                     errors++;
+                    var logErrorMessage = $"WCF Operation Failure: Service [{typeof(TClient)}].[{serviceCall.Method.Name}] Attempt ({errors}/{retryAttempts}). Exception [{exception.Message}]";
+                    //TODO: Log error here
+                    Console.WriteLine(logErrorMessage);
+
+                    if (retryAttempts > 1)
+                    {
+                        var logSleepMessage = $"Retry cooldown initiated ({RetryCoolDownInSeconds}s)";
+                        //TODO: Log sleep here
+                        Console.WriteLine(logSleepMessage);
+
+                        Thread.Sleep(new TimeSpan(0, 0, RetryCoolDownInSeconds));
+                    }
                 }
                 finally
                 {
@@ -95,11 +114,17 @@ namespace WcfServiceProxy
                     {
                         this.DisposeClient();
                     }
+
+                    this.ServiceClient.Close();
                 }
             }
 
-            throw exception ?? new CommunicationException(
-                @"Excecution unsuccessfull with no exceptions. Invalid state reached inside 'Service Client Wrapper' for opperation.");
+            if (!completed)
+            {
+                throw exception ?? new CommunicationException($"WCF Operation Failure: Service [{typeof(TClient)}].[{serviceCall.Method.Name}]");
+            }
+
+            return response;
         }
 
         public void Dispose()
