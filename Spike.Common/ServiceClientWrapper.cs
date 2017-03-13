@@ -18,8 +18,8 @@ using System.Threading;
 namespace Spike.Common
 {
     public class ServiceClientWrapper<TClient, TIService> : IDisposable
-        where TClient : ClientBase<TIService>, TIService
-        where TIService : class
+         where TClient : ClientBase<TIService>, TIService
+         where TIService : class
     {
         private TClient _serviceClient;
         private Binding _binding;
@@ -96,14 +96,12 @@ namespace Spike.Common
 
                     errors++;
                     var logErrorMessage = $"WCF Operation Failure: Service [{typeof(TClient)}].[{serviceCall.Method.Name}] Attempt ({errors}/{retryAttempts}). Exception [{exception.Message}]";
-                    //TODO: Log error here
-                    Console.WriteLine(logErrorMessage);
+                    //TODO: Add logging here >> logger.Info(logErrorMessage);
 
                     if (retryAttempts > 1)
                     {
                         var logSleepMessage = $"Retry cooldown initiated ({RetryCoolDownInSeconds}s)";
-                        //TODO: Log sleep here
-                        Console.WriteLine(logSleepMessage);
+                        //TODO: Add logging here >> logger.Info(logSleepMessage);
 
                         Thread.Sleep(new TimeSpan(0, 0, RetryCoolDownInSeconds));
                     }
@@ -114,8 +112,10 @@ namespace Spike.Common
                     {
                         this.DisposeClient();
                     }
-
-                    this.ServiceClient.Close();
+                    else
+                    {
+                        this.ServiceClient.Close();
+                    }
                 }
             }
 
@@ -148,6 +148,7 @@ namespace Spike.Common
             {
                 return;
             }
+
             try
             {
                 switch (this._serviceClient.State)
@@ -171,7 +172,6 @@ namespace Spike.Common
             }
         }
     }
-
     public static class ServiceExtentions
     {
         public static bool IsReady(this CommunicationState original)
