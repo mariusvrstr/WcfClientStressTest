@@ -18,8 +18,8 @@ using System.Threading;
 namespace Spike.Common
 {
     public class ServiceClientWrapper<TClient, TIService> : IDisposable
-         where TClient : ClientBase<TIService>, TIService
-         where TIService : class
+          where TClient : ClientBase<TIService>, TIService
+          where TIService : class
     {
         private TClient _serviceClient;
         private Binding _binding;
@@ -52,6 +52,20 @@ namespace Spike.Common
                 exceptionHandler);
         }
 
+        private void OnException(string errorMessage, string originalMethodName, ref int errors, ref int retryAttempts)
+        {
+            errors++;
+            var logErrorMessage = $"WCF Operation Failure: Service [{typeof(TClient)}].[{originalMethodName}] Attempt ({errors}/{retryAttempts}). Exception [{errorMessage}]";
+            Console.WriteLine(logErrorMessage);
+
+            if (retryAttempts <= 1) return;
+
+            var logSleepMessage = $"Retry cooldown initiated ({RetryCoolDownInSeconds}s)";
+            Console.WriteLine(logSleepMessage);
+
+            Thread.Sleep(new TimeSpan(0, 0, RetryCoolDownInSeconds));
+        }
+
         public TResult Excecute<TResult>(
             Func<TIService, TResult> serviceCall,
             int retryAttempts = 1,
@@ -75,13 +89,12 @@ namespace Spike.Common
                             throw new CommunicationObjectFaultedException($"WCF Client state is not valid. Connection Status [{this.ServiceClient.State}]");
                         }
                     }
-
+                    
                     response = serviceCall.Invoke(this.ServiceClient);
                     completed = true;
                 }
                 catch (CommunicationException comsException)
                 {
-                    exception = comsException;
                     if (exceptionHandler != null)
                     {
                         try
@@ -94,17 +107,11 @@ namespace Spike.Common
                         }
                     }
 
-                    errors++;
-                    var logErrorMessage = $"WCF Operation Failure: Service [{typeof(TClient)}].[{serviceCall.Method.Name}] Attempt ({errors}/{retryAttempts}). Exception [{exception.Message}]";
-                    //TODO: Add logging here >> logger.Info(logErrorMessage);
-
-                    if (retryAttempts > 1)
-                    {
-                        var logSleepMessage = $"Retry cooldown initiated ({RetryCoolDownInSeconds}s)";
-                        //TODO: Add logging here >> logger.Info(logSleepMessage);
-
-                        Thread.Sleep(new TimeSpan(0, 0, RetryCoolDownInSeconds));
-                    }
+                    OnException(comsException.Message, serviceCall.Method.Name, ref errors, ref retryAttempts);
+                }
+                catch (Exception ex)
+                {
+                    OnException(ex.Message, serviceCall.Method.Name, ref errors, ref retryAttempts);
                 }
                 finally
                 {
@@ -153,10 +160,12 @@ namespace Spike.Common
             {
                 switch (this._serviceClient.State)
                 {
+                    case CommunicationState.Closing:
                     case CommunicationState.Faulted:
                         this._serviceClient.Abort();
                         break;
-
+                    case CommunicationState.Closed:
+                        break;
                     default:
                         this._serviceClient.Close();
                         break;

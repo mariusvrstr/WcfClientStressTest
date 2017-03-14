@@ -21,7 +21,7 @@ namespace WcfServiceProxy
 
             if (simulateExceptions)
             {
-                consumer.Excecute(c => c.ResetCache());
+               consumer.Excecute(c => c.ResetCache());
             }
 
             var response = consumer.Excecute(c => c.TestCall(value, simulateExceptions), attempts);

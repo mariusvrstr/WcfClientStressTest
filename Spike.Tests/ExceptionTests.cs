@@ -14,6 +14,8 @@ namespace Spike.Tests
          * 
          * */
 
+        private const int RetryQty = 3;
+
         [TestMethod]
         public void TestExceptionsNoRetry()
         {
@@ -60,7 +62,7 @@ namespace Spike.Tests
                 try
                 {
                     var proxy = new TestProxy();
-                    var newValue = proxy.TestCall(k, true, 2);
+                    var newValue = proxy.TestCall(k, true, RetryQty);
                     Console.WriteLine($"Index [{k}] Hash [{newValue}]");
                     completed++;
                 }
