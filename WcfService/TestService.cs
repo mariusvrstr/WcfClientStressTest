@@ -1,10 +1,9 @@
 ﻿
-using System;
-
 namespace WcfService
 {
     using System.ServiceModel;
     using System.Collections.Generic;
+    using System;
 
     public class TestService : ITestService
     {

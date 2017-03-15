@@ -63,7 +63,7 @@ namespace Spike.Common
             var logSleepMessage = $"Retry cooldown initiated ({RetryCoolDownInSeconds}s)";
             Console.WriteLine(logSleepMessage);
 
-            Thread.Sleep(new TimeSpan(0, 0, RetryCoolDownInSeconds));
+            Thread.Sleep(RetryCoolDownInSeconds * 1000);
         }
 
         public TResult Excecute<TResult>(
