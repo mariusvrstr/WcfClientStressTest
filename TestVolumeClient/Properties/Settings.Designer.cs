@@ -49,5 +49,14 @@ namespace TestClient.Properties {
                 return ((bool)(this["RetryFailures"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseMultipleThreads {
+            get {
+                return ((bool)(this["UseMultipleThreads"]));
+            }
+        }
     }
 }
